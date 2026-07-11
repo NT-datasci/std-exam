@@ -1,9 +1,5 @@
 import { useState } from 'react'
-import './assets/react.svg'
-import './assets/vite.svg'
-import './assets/hero.png'
-import { BookOpen, FileText, Monitor, CheckCircle2, XCircle, Lightbulb, PlayCircle, RotateCcw, Award, ChevronRight, AlertCircle } from 'lucide-react';
-import './App.css'
+import { BookOpen, FileText, Monitor, CheckCircle2, XCircle, Lightbulb, PlayCircle, RotateCcw, Award, ChevronRight, AlertCircle, ScrollText } from 'lucide-react';
 
 const quizData = {
   english: [
@@ -144,17 +140,152 @@ const quizData = {
   ]
 };
 
+// Convert an Arabic numeral to Thai numeral text
+const THAI_DIGITS = ['๐','๑','๒','๓','๔','๕','๖','๗','๘','๙'];
+const toThai = (n) => String(n).split('').map(ch => (/[0-9]/.test(ch) ? THAI_DIGITS[+ch] : ch)).join('');
+
+// Official answer-sheet style labels
+const OPTION_LABELS = ['ก', 'ข', 'ค', 'ง'];
+const stripOptionPrefix = (text) => text.replace(/^\s*(\d+\.|[a-dA-D]\.)\s*/, '');
+
+const SUBJECT_META = {
+  english: { title: 'ภาษาอังกฤษ', sub: 'English Language', code: 'วิชา ๐๑', icon: FileText, count: 30 },
+  thai: { title: 'ภาษาไทย', sub: 'Thai Language', code: 'วิชา ๐๒', icon: ScrollText, count: 50 },
+  it: { title: 'เทคโนโลยีสารสนเทศ', sub: 'Information Technology', code: 'วิชา ๐๓', icon: Monitor, count: 50 },
+};
+
+const GlobalStyle = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+    .std-root {
+      --navy-900:#152540; --navy-800:#1D3358; --navy-700:#28436E; --navy-050:#EEF1F6;
+      --gold-700:#8C6A22; --gold-600:#A9812F; --gold-300:#D8BE7C; --gold-100:#F2E9CE;
+      --paper:#F7F3E9; --paper-dim:#EFE8D6; --line:#D8CDAE;
+      --ink-900:#1B1B18; --ink-600:#5B564A; --ink-400:#8B8578;
+      --green-700:#2C5F45; --green-100:#E1EBE3;
+      --maroon-700:#7C2A34; --maroon-100:#F2E1E1;
+      font-family: 'Sarabun', 'Noto Serif Thai', serif;
+      color: var(--ink-900);
+      background: var(--paper);
+      min-height: 100vh;
+    }
+    .std-root * { box-sizing: border-box; }
+    .font-display { font-family: 'Noto Serif Thai', serif; }
+
+    .std-page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 32px 16px 56px; }
+
+    .letterhead { width: 100%; max-width: 760px; text-align: center; margin-bottom: 28px; }
+    .letterhead-rule { height: 3px; background: var(--navy-900); margin-bottom: 4px; }
+    .letterhead-rule.thin { height: 1px; background: var(--gold-600); margin-top: 4px; margin-bottom: 0; }
+    .letterhead-body { border-left: 1px solid var(--line); border-right: 1px solid var(--line); padding: 22px 20px 18px; }
+    .letterhead-seal { width: 58px; height: 58px; margin: 0 auto 12px; border-radius: 50%; border: 2px solid var(--gold-600); display: flex; align-items: center; justify-content: center; background: var(--paper); color: var(--navy-900); }
+    .letterhead-eyebrow { font-size: 12px; letter-spacing: 3px; color: var(--gold-700); text-transform: uppercase; margin-bottom: 6px; }
+    .letterhead-title { font-size: 26px; font-weight: 700; color: var(--navy-900); margin: 0 0 6px; }
+    .letterhead-sub { font-size: 14px; color: var(--ink-600); margin: 0; }
+
+    .std-card { width: 100%; max-width: 760px; background: #fff; border: 1px solid var(--line); }
+    .std-card-inner { padding: 28px 30px; }
+
+    .subject-list { display: flex; flex-direction: column; }
+    .subject-row { display: flex; align-items: center; gap: 18px; padding: 20px 24px; border-bottom: 1px solid var(--line); background: #fff; cursor: pointer; text-align: left; width: 100%; transition: background 120ms ease; }
+    .subject-row:last-child { border-bottom: none; }
+    .subject-row:hover { background: var(--navy-050); }
+    .subject-index { font-family: 'Noto Serif Thai', serif; font-size: 20px; color: var(--gold-700); border: 1px solid var(--gold-600); width: 40px; height: 40px; min-width: 40px; display: flex; align-items: center; justify-content: center; }
+    .subject-icon { color: var(--navy-800); flex-shrink: 0; }
+    .subject-name { font-family: 'Noto Serif Thai', serif; font-size: 18px; font-weight: 600; color: var(--navy-900); }
+    .subject-name-sub { font-size: 13px; color: var(--ink-400); }
+    .subject-meta { margin-left: auto; text-align: right; font-size: 13px; color: var(--ink-600); }
+    .subject-code { display: block; font-size: 11px; letter-spacing: 1px; color: var(--gold-700); margin-bottom: 2px; }
+
+    .btn { font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.5px; padding: 12px 26px; border: 1px solid var(--navy-900); cursor: pointer; transition: all 120ms ease; background: var(--navy-900); color: #fff; }
+    .btn:hover { background: var(--navy-700); }
+    .btn:disabled { background: var(--ink-400); border-color: var(--ink-400); cursor: not-allowed; }
+    .btn-outline { background: transparent; color: var(--navy-900); }
+    .btn-outline:hover { background: var(--navy-050); }
+    .btn-plain { background: transparent; color: var(--ink-600); border: 1px solid var(--line); font-weight: 500; }
+    .btn-plain:hover { background: var(--navy-050); color: var(--navy-900); }
+
+    .quiz-header { width: 100%; max-width: 760px; margin-bottom: 0; }
+    .quiz-header-bar { display: flex; justify-content: space-between; align-items: center; padding: 14px 4px; flex-wrap: wrap; gap: 10px; }
+    .quiz-header-left { display: flex; align-items: center; gap: 12px; }
+    .quiz-header-title { font-family: 'Noto Serif Thai', serif; font-weight: 600; color: var(--navy-900); font-size: 15px; }
+    .quiz-header-label { font-size: 11px; letter-spacing: 1px; color: var(--gold-700); text-transform: uppercase; }
+    .score-plate { display: flex; gap: 14px; border: 1px solid var(--line); padding: 6px 14px; font-size: 13px; background: #fff; }
+    .score-item { display: flex; align-items: center; gap: 5px; font-weight: 600; }
+    .score-item.correct { color: var(--green-700); }
+    .score-item.wrong { color: var(--maroon-700); }
+    .progress-track { height: 3px; background: var(--line); width: 100%; }
+    .progress-fill { height: 100%; background: var(--gold-600); transition: width 250ms ease; }
+
+    .q-number-plate { display: inline-flex; align-items: baseline; gap: 8px; font-family: 'Noto Serif Thai', serif; color: var(--navy-900); margin-bottom: 4px; }
+    .q-number-plate .num { font-size: 22px; font-weight: 700; }
+    .q-number-plate .of { font-size: 13px; color: var(--ink-400); }
+    .q-divider { height: 1px; background: var(--gold-600); width: 100%; margin: 10px 0 22px; position: relative; }
+    .q-divider::after { content: ''; position: absolute; left: 0; top: -2px; height: 1px; width: 100%; background: var(--line); }
+
+    .context-box { background: var(--navy-050); border-left: 3px solid var(--navy-800); padding: 16px 18px; margin-bottom: 22px; }
+    .context-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--navy-800); font-weight: 700; margin-bottom: 6px; }
+    .context-text { font-size: 14px; line-height: 1.7; color: var(--ink-600); white-space: pre-wrap; }
+
+    .q-text { font-size: 17px; line-height: 1.7; color: var(--ink-900); margin-bottom: 22px; white-space: pre-wrap; }
+
+    .options-list { display: flex; flex-direction: column; gap: 10px; }
+    .option-row { display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; border: 1px solid var(--line); background: #fff; cursor: pointer; text-align: left; width: 100%; transition: all 120ms ease; }
+    .option-row:hover:not(:disabled) { border-color: var(--navy-700); background: var(--navy-050); }
+    .option-row:disabled { cursor: default; }
+    .option-row.selected { border-color: var(--navy-900); background: var(--navy-050); }
+    .option-row.correct { border-color: var(--green-700); background: var(--green-100); }
+    .option-row.incorrect { border-color: var(--maroon-700); background: var(--maroon-100); }
+    .option-row.faded { opacity: 0.55; }
+    .option-label { font-family: 'Noto Serif Thai', serif; font-weight: 700; font-size: 15px; width: 30px; height: 30px; min-width: 30px; border: 1px solid var(--navy-900); display: flex; align-items: center; justify-content: center; color: var(--navy-900); flex-shrink: 0; }
+    .option-row.selected .option-label { background: var(--navy-900); color: #fff; }
+    .option-row.correct .option-label { background: var(--green-700); border-color: var(--green-700); color: #fff; }
+    .option-row.incorrect .option-label { background: var(--maroon-700); border-color: var(--maroon-700); color: #fff; }
+    .option-text { font-size: 15px; line-height: 1.6; padding-top: 3px; color: var(--ink-900); flex: 1; }
+    .option-mark { margin-left: auto; flex-shrink: 0; padding-top: 3px; }
+
+    .explain-box { margin-top: 24px; background: var(--gold-100); border: 1px solid var(--gold-300); padding: 18px 20px; }
+    .explain-title { display: flex; align-items: center; gap: 8px; font-family: 'Noto Serif Thai', serif; font-weight: 700; color: var(--gold-700); font-size: 15px; margin-bottom: 8px; }
+    .explain-text { font-size: 14px; line-height: 1.75; color: var(--ink-900); white-space: pre-wrap; }
+
+    .action-bar { display: flex; justify-content: space-between; align-items: center; padding: 18px 4px 0; gap: 14px; flex-wrap: wrap; border-top: 1px solid var(--line); margin-top: 26px; }
+    .status-text { font-size: 13px; color: var(--ink-600); display: flex; align-items: center; gap: 6px; }
+    .status-text.correct { color: var(--green-700); font-weight: 600; }
+    .status-text.incorrect { color: var(--maroon-700); font-weight: 600; }
+
+    .result-shell { width: 100%; max-width: 640px; }
+    .result-frame { border: 1px solid var(--gold-600); padding: 6px; }
+    .result-frame-inner { border: 1px solid var(--navy-900); padding: 40px 34px; text-align: center; background: #fff; }
+    .result-seal { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--gold-600); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; color: var(--navy-900); }
+    .result-title { font-family: 'Noto Serif Thai', serif; font-size: 24px; font-weight: 700; color: var(--navy-900); margin: 0 0 4px; }
+    .result-sub { font-size: 14px; color: var(--ink-600); margin: 0 0 30px; }
+    .result-table { width: 100%; border-collapse: collapse; margin-bottom: 26px; }
+    .result-table td { border: 1px solid var(--line); padding: 16px 12px; text-align: center; }
+    .result-table .label { font-size: 12px; letter-spacing: 1px; color: var(--ink-400); text-transform: uppercase; display: block; margin-bottom: 6px; }
+    .result-table .value { font-family: 'Noto Serif Thai', serif; font-size: 30px; font-weight: 700; color: var(--navy-900); }
+    .result-table .value.accent { color: var(--gold-700); }
+    .result-feedback { font-family: 'Noto Serif Thai', serif; font-size: 17px; color: var(--navy-900); margin-bottom: 30px; padding-top: 14px; border-top: 1px dashed var(--line); }
+    .result-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
+    @media (max-width: 520px) {
+      .std-card-inner { padding: 22px 18px; }
+      .letterhead-title { font-size: 21px; }
+      .result-frame-inner { padding: 30px 18px; }
+      .subject-row { padding: 16px; }
+    }
+  `}</style>
+);
+
 export default function App() {
-  const [appState, setAppState] = useState('home'); // home, quiz, result
+  const [appState, setAppState] = useState('home');
   const [activeTab, setActiveTab] = useState('english');
   const [currentQIndex, setCurrentQIndex] = useState(0);
-  
-  // Score Tracking
   const [score, setScore] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
-  const [isAnswered, setIsAnswered] = useState(false); // เช็คว่าข้อปัจจุบันตรวจคำตอบหรือยัง
-  const [selectedOption, setSelectedOption] = useState(null); // ตัวเลือกที่กำลังคลิกในข้อปัจจุบัน
+  const [isAnswered, setIsAnswered] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
 
   const currentData = quizData[activeTab];
   const totalQuestions = currentData.length;
@@ -173,28 +304,20 @@ export default function App() {
   };
 
   const handleOptionClick = (optionIndex) => {
-    if (isAnswered) return; // ถ้าตรวจคำตอบแล้วห้ามเปลี่ยน
+    if (isAnswered) return;
     setSelectedOption(optionIndex);
   };
 
   const checkAnswer = () => {
     if (selectedOption === null) return;
-    
     const isCorrect = selectedOption === currentItem.a;
-    if (isCorrect) {
-      setScore(prev => prev + 1);
-    } else {
-      setWrongCount(prev => prev + 1);
-    }
+    if (isCorrect) setScore(prev => prev + 1);
+    else setWrongCount(prev => prev + 1);
 
     setUserAnswers(prev => ({
       ...prev,
-      [currentItem.id]: {
-        selected: selectedOption,
-        isCorrect: isCorrect
-      }
+      [currentItem.id]: { selected: selectedOption, isCorrect }
     }));
-    
     setIsAnswered(true);
   };
 
@@ -220,52 +343,49 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const Letterhead = ({ eyebrow, title, sub }) => (
+    <div className="letterhead">
+      <div className="letterhead-rule" />
+      <div className="letterhead-body">
+        <div className="letterhead-seal"><Award size={28} strokeWidth={1.5} /></div>
+        <div className="letterhead-eyebrow">{eyebrow}</div>
+        <h1 className="letterhead-title">{title}</h1>
+        <p className="letterhead-sub">{sub}</p>
+      </div>
+      <div className="letterhead-rule thin" />
+    </div>
+  );
+
   if (appState === 'home') {
     return (
-      <div className="min-h-screen bg-slate-50 font-sans flex flex-col items-center justify-center p-6">
-        <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl overflow-hidden text-center">
-          <div className="bg-indigo-600 p-8 text-white">
-            <BookOpen size={64} className="mx-auto mb-4 opacity-90" />
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2">ระบบฝึกทำข้อสอบ STD 2025</h1>
-            <p className="text-indigo-100 text-lg">ทดสอบความรู้และดูเฉลยพร้อมคำอธิบายแบบข้อต่อข้อ</p>
-          </div>
-          
-          <div className="p-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">เลือกวิชาที่ต้องการทดสอบ</h2>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <button 
-                onClick={() => startQuiz('english')}
-                className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-blue-100 bg-blue-50 hover:bg-blue-100 hover:border-blue-300 transition-all group"
-              >
-                <div className="p-4 bg-blue-500 text-white rounded-full group-hover:scale-110 transition-transform">
-                  <FileText size={28} />
-                </div>
-                <div className="font-semibold text-blue-900 text-lg">ภาษาอังกฤษ</div>
-                <div className="text-sm text-blue-600">30 ข้อ</div>
-              </button>
-              
-              <button 
-                onClick={() => startQuiz('thai')}
-                className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-emerald-100 bg-emerald-50 hover:bg-emerald-100 hover:border-emerald-300 transition-all group"
-              >
-                <div className="p-4 bg-emerald-500 text-white rounded-full group-hover:scale-110 transition-transform">
-                  <FileText size={28} />
-                </div>
-                <div className="font-semibold text-emerald-900 text-lg">ภาษาไทย</div>
-                <div className="text-sm text-emerald-600">50 ข้อ</div>
-              </button>
-              
-              <button 
-                onClick={() => startQuiz('it')}
-                className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-purple-100 bg-purple-50 hover:bg-purple-100 hover:border-purple-300 transition-all group"
-              >
-                <div className="p-4 bg-purple-500 text-white rounded-full group-hover:scale-110 transition-transform">
-                  <Monitor size={28} />
-                </div>
-                <div className="font-semibold text-purple-900 text-lg">ไอที (IT)</div>
-                <div className="text-sm text-purple-600">50 ข้อ</div>
-              </button>
+      <div className="std-root">
+        <GlobalStyle />
+        <div className="std-page">
+          <Letterhead
+            eyebrow="ระบบทดสอบความรู้เชิงวิชาการ"
+            title="ศูนย์ทดสอบมาตรฐานความรู้ ประจำปี ๒๕๖๘"
+            sub="กรุณาเลือกรายวิชาที่ประสงค์จะทำการทดสอบจากรายการด้านล่าง"
+          />
+
+          <div className="std-card">
+            <div className="subject-list">
+              {Object.entries(SUBJECT_META).map(([key, meta], idx) => {
+                const Icon = meta.icon;
+                return (
+                  <button key={key} className="subject-row" onClick={() => startQuiz(key)}>
+                    <span className="subject-index">{toThai(idx + 1)}</span>
+                    <Icon className="subject-icon" size={22} strokeWidth={1.5} />
+                    <span>
+                      <span className="subject-name">{meta.title}</span><br />
+                      <span className="subject-name-sub">{meta.sub}</span>
+                    </span>
+                    <span className="subject-meta">
+                      <span className="subject-code">{meta.code}</span>
+                      จำนวน {toThai(meta.count)} ข้อ
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -276,54 +396,57 @@ export default function App() {
   if (appState === 'result') {
     const attemptedCount = Object.keys(userAnswers).length;
     const percentage = attemptedCount > 0 ? Math.round((score / attemptedCount) * 100) : 0;
-    const feedback = percentage >= 80 ? "ยอดเยี่ยมมาก! พื้นฐานแน่นสุดๆ"
-      : percentage >= 60 ? "เก่งมาก! ไปต่อได้สวยเลย"
-      : percentage >= 40 ? "ทำได้ดี! ทบทวนจุดอ่อนอีกนิด"
-      : "สู้ๆ! ลองอ่านคำอธิบายแล้วทำใหม่อีกรอบนะ";
+    const feedback = percentage >= 80 ? "ผลการทดสอบอยู่ในเกณฑ์ดีมาก"
+      : percentage >= 60 ? "ผลการทดสอบอยู่ในเกณฑ์ดี"
+      : percentage >= 40 ? "ผลการทดสอบอยู่ในเกณฑ์พอใช้ ควรทบทวนเพิ่มเติม"
+      : "ควรทบทวนเนื้อหาและทำแบบทดสอบซ้ำอีกครั้ง";
 
     return (
-      <div className="min-h-screen bg-slate-50 font-sans p-6 pt-10">
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-            <div className="bg-indigo-600 p-8 text-white text-center">
-              <Award size={72} className="mx-auto mb-4 text-yellow-300" />
-              <h1 className="text-3xl font-bold mb-2">สรุปผลการทำแบบทดสอบ</h1>
-              <p className="text-indigo-100 text-lg">วิชา {activeTab === 'english' ? 'ภาษาอังกฤษ' : activeTab === 'thai' ? 'ภาษาไทย' : 'เทคโนโลยีสารสนเทศ'}</p>
-            </div>
-            
-            <div className="p-8">
-              <div className="flex flex-wrap justify-center gap-6 mb-10">
-                <div className="bg-indigo-50 rounded-xl p-6 text-center min-w-[150px] border border-indigo-100">
-                  <div className="text-4xl font-bold text-indigo-700 mb-1">{score}</div>
-                  <div className="text-sm font-medium text-indigo-500 uppercase tracking-wide">คะแนนที่ได้</div>
-                </div>
-                <div className="bg-gray-50 rounded-xl p-6 text-center min-w-[150px] border border-gray-200">
-                  <div className="text-4xl font-bold text-gray-700 mb-1">{attemptedCount}</div>
-                  <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">ทำไปทั้งหมด</div>
-                </div>
-                <div className="bg-indigo-600 rounded-xl p-6 text-center min-w-[150px] text-white shadow-md transform scale-105">
-                  <div className="text-4xl font-bold mb-1">{percentage}%</div>
-                  <div className="text-sm font-medium text-indigo-200 uppercase tracking-wide">เปอร์เซ็นต์ความแม่นยำ</div>
-                </div>
-              </div>
+      <div className="std-root">
+        <GlobalStyle />
+        <div className="std-page">
+          <Letterhead
+            eyebrow="รายงานผลการทดสอบ"
+            title="ใบรายงานผลการทดสอบ"
+            sub={`วิชา ${SUBJECT_META[activeTab].title} (${SUBJECT_META[activeTab].sub})`}
+          />
 
-              <div className="text-center mb-10">
-                <p className="text-xl font-medium text-gray-800">{feedback}</p>
-              </div>
+          <div className="result-shell">
+            <div className="result-frame">
+              <div className="result-frame-inner">
+                <div className="result-seal"><ScrollText size={26} strokeWidth={1.5} /></div>
+                <h2 className="result-title">สรุปผลการทดสอบ</h2>
+                <p className="result-sub">เลขที่ชุดข้อสอบ {SUBJECT_META[activeTab].code}</p>
 
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <button 
-                  onClick={() => startQuiz(activeTab)}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-indigo-600 text-indigo-700 rounded-lg font-medium hover:bg-indigo-50 transition-colors"
-                >
-                  <RotateCcw size={20} /> ทำวิชานี้ใหม่อีกครั้ง
-                </button>
-                <button 
-                  onClick={resetToHome}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm"
-                >
-                  <BookOpen size={20} /> เลือกวิชาอื่น
-                </button>
+                <table className="result-table">
+                  <tbody>
+                    <tr>
+                      <td>
+                        <span className="label">คะแนนที่ได้</span>
+                        <span className="value">{toThai(score)}</span>
+                      </td>
+                      <td>
+                        <span className="label">ข้อที่ทำทั้งหมด</span>
+                        <span className="value">{toThai(attemptedCount)}</span>
+                      </td>
+                      <td>
+                        <span className="label">ร้อยละความแม่นยำ</span>
+                        <span className="value accent">{toThai(percentage)}%</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <p className="result-feedback">{feedback}</p>
+
+                <div className="result-actions">
+                  <button onClick={() => startQuiz(activeTab)} className="btn btn-outline">
+                    <RotateCcw size={16} style={{ marginRight: 8, verticalAlign: -3 }} />ทำแบบทดสอบวิชานี้ใหม่
+                  </button>
+                  <button onClick={resetToHome} className="btn">
+                    <BookOpen size={16} style={{ marginRight: 8, verticalAlign: -3 }} />กลับสู่หน้าเลือกวิชา
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -332,202 +455,127 @@ export default function App() {
     );
   }
 
+  const meta = SUBJECT_META[activeTab];
+
   return (
-    <div className="min-h-screen bg-slate-100 font-sans flex flex-col">
-      {/* Top Navigation & Score Bar */}
-      <header className="bg-white shadow-sm sticky top-0 z-20 border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
-          
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={resetToHome}
-              className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
-              title="กลับหน้าหลัก"
-            >
-              <BookOpen size={22} />
-            </button>
-            <div className="h-6 w-px bg-gray-300"></div>
-            <div>
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">กำลังทำวิชา</div>
-              <div className="font-semibold text-indigo-700 flex items-center gap-1.5">
-                {activeTab === 'english' ? 'ภาษาอังกฤษ' : activeTab === 'thai' ? 'ภาษาไทย' : 'เทคโนโลยีสารสนเทศ'}
+    <div className="std-root">
+      <GlobalStyle />
+      <div className="std-page" style={{ paddingTop: 0 }}>
+        <div className="quiz-header">
+          <div className="quiz-header-bar">
+            <div className="quiz-header-left">
+              <button onClick={resetToHome} className="btn-plain btn" style={{ padding: '8px 12px' }} title="กลับหน้าหลัก">
+                <BookOpen size={16} />
+              </button>
+              <div>
+                <div className="quiz-header-label">กำลังทำแบบทดสอบ</div>
+                <div className="quiz-header-title">{meta.title}</div>
               </div>
+            </div>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <div className="score-plate">
+                <span className="score-item correct"><CheckCircle2 size={15} />{toThai(score)}</span>
+                <span className="score-item wrong"><XCircle size={15} />{toThai(wrongCount)}</span>
+              </div>
+              <button onClick={endQuiz} className="btn-plain btn" style={{ padding: '10px 16px', fontSize: 12 }}>
+                จบการทดสอบ
+              </button>
             </div>
           </div>
-
-          <div className="flex gap-2 sm:gap-4">
-            <div className="flex flex-col items-end sm:items-center sm:flex-row gap-1 sm:gap-3 bg-gray-50 px-3 py-1.5 rounded-md border border-gray-200">
-              <span className="text-xs font-semibold text-gray-500 uppercase hidden sm:block">คะแนน:</span>
-              <div className="flex gap-3">
-                <span className="flex items-center gap-1 text-green-600 font-bold" title="ตอบถูก">
-                  <CheckCircle2 size={16} /> {score}
-                </span>
-                <span className="flex items-center gap-1 text-red-500 font-bold" title="ตอบผิด">
-                  <XCircle size={16} /> {wrongCount}
-                </span>
-              </div>
-            </div>
-            
-            <button 
-              onClick={endQuiz}
-              className="text-xs sm:text-sm font-medium text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition-colors border border-gray-200"
-            >
-              จบการทำข้อสอบ
-            </button>
+          <div className="progress-track">
+            <div className="progress-fill" style={{ width: `${(currentQIndex / totalQuestions) * 100}%` }} />
           </div>
         </div>
-        
-        {/* Progress Bar */}
-        <div className="h-1.5 w-full bg-gray-100">
-          <div 
-            className="h-full bg-indigo-500 transition-all duration-300"
-            style={{ width: `${((currentQIndex) / totalQuestions) * 100}%` }}
-          ></div>
-        </div>
-      </header>
 
-      <main className="max-w-3xl mx-auto w-full px-4 py-8 flex-1 flex flex-col">
-        
-        <div className="flex justify-between items-end mb-4 px-2">
-          <h2 className="text-xl font-bold text-gray-800">ข้อที่ {currentQIndex + 1} <span className="text-gray-400 font-medium text-lg">/ {totalQuestions}</span></h2>
-        </div>
-
-        {/* Question Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex-1 flex flex-col">
-          
-          {}
-          {currentItem.context && (
-            <div className="bg-amber-50 p-5 sm:p-6 border-b border-amber-100">
-              <div className="flex items-center gap-2 mb-2 text-amber-800">
-                <FileText size={18} />
-                <h4 className="font-semibold text-sm uppercase tracking-wide">Reading / Context</h4>
-              </div>
-              <p className="text-gray-800 text-sm sm:text-base whitespace-pre-wrap leading-relaxed">{currentItem.context}</p>
+        <div className="std-card" style={{ marginTop: 24 }}>
+          <div className="std-card-inner">
+            <div className="q-number-plate">
+              <span className="num">ข้อที่ {toThai(currentQIndex + 1)}</span>
+              <span className="of">จากทั้งหมด {toThai(totalQuestions)} ข้อ</span>
             </div>
-          )}
-          
-          <div className="p-6 sm:p-8 flex-1">
-            <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-6 whitespace-pre-wrap leading-relaxed">
-              {currentItem.q}
-            </h3>
-            
-            {}
-            <div className="space-y-3">
+            <div className="q-divider" />
+
+            {currentItem.context && (
+              <div className="context-box">
+                <div className="context-label">เอกสารประกอบคำถาม</div>
+                <div className="context-text">{currentItem.context}</div>
+              </div>
+            )}
+
+            <div className="q-text">{currentItem.q}</div>
+
+            <div className="options-list">
               {currentItem.o.map((opt, optIndex) => {
                 const isCorrect = currentItem.a === optIndex;
                 const isUserSelected = selectedOption === optIndex;
-                
-                let optionClass = "p-4 rounded-xl border-2 transition-all duration-200 outline-none text-left w-full ";
-                
-                let icon;
+                let rowClass = 'option-row';
+                let mark = null;
+
                 if (isAnswered) {
-                  // State: ตรวจคำตอบแล้ว
                   if (isCorrect) {
-                    optionClass += "bg-green-50 border-green-500 text-green-900 font-medium shadow-sm";
-                    icon = <CheckCircle2 className="text-green-600" size={24} />;
-                  } else if (isUserSelected && !isCorrect) {
-                    optionClass += "bg-red-50 border-red-400 text-red-900";
-                    icon = <XCircle className="text-red-500" size={24} />;
+                    rowClass += ' correct';
+                    mark = <CheckCircle2 size={20} color="var(--green-700)" />;
+                  } else if (isUserSelected) {
+                    rowClass += ' incorrect';
+                    mark = <XCircle size={20} color="var(--maroon-700)" />;
                   } else {
-                    optionClass += "border-gray-200 text-gray-500 opacity-60 bg-gray-50";
-                    icon = <div className="w-6 h-6 rounded-full border-2 border-gray-300"></div>;
+                    rowClass += ' faded';
                   }
-                } else {
-                  // State: กำลังเลือกคำตอบ (ยังไม่กดตรวจ)
-                  if (isUserSelected) {
-                    optionClass += "bg-indigo-50 border-indigo-500 text-indigo-900 shadow-sm transform scale-[1.01]";
-                    icon = (
-                      <div className="w-6 h-6 rounded-full border-2 border-indigo-500 flex items-center justify-center">
-                        <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
-                      </div>
-                    );
-                  } else {
-                    optionClass += "border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-indigo-300 cursor-pointer";
-                    icon = <div className="w-6 h-6 rounded-full border-2 border-gray-300"></div>;
-                  }
+                } else if (isUserSelected) {
+                  rowClass += ' selected';
                 }
 
                 return (
-                  <button 
-                    key={optIndex} 
-                    className={optionClass}
+                  <button
+                    key={optIndex}
+                    className={rowClass}
                     onClick={() => handleOptionClick(optIndex)}
                     disabled={isAnswered}
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="mt-0.5 flex-shrink-0">
-                        {icon}
-                      </div>
-                      <span className="leading-relaxed text-[15px] sm:text-base">{opt}</span>
-                    </div>
+                    <span className="option-label">{OPTION_LABELS[optIndex]}</span>
+                    <span className="option-text">{stripOptionPrefix(opt)}</span>
+                    {mark && <span className="option-mark">{mark}</span>}
                   </button>
                 );
               })}
             </div>
 
-            {}
-            {/* Explanation Area (Shows after answering) */}
             {isAnswered && (
-              <div className="mt-8 bg-indigo-50 border-l-4 border-indigo-500 rounded-r-xl p-5 sm:p-6 animate-in slide-in-from-top-4 duration-300">
-                <div className="flex items-start gap-3">
-                  <div className="bg-white text-indigo-600 rounded-full p-1.5 flex-shrink-0 shadow-sm mt-0.5">
-                    <Lightbulb size={20} />
-                  </div>
-                  <div>
-                    <span className="font-bold text-indigo-900 block mb-2 text-lg">คำอธิบาย / จุดที่ต้องรู้</span>
-                    <span className="text-indigo-900 text-base leading-relaxed whitespace-pre-wrap">{currentItem.exp || "ไม่มีคำอธิบายเพิ่มเติมสำหรับข้อนี้"}</span>
-                  </div>
-                </div>
+              <div className="explain-box">
+                <div className="explain-title"><Lightbulb size={17} />คำอธิบายเฉลย</div>
+                <div className="explain-text">{currentItem.exp || "ไม่มีคำอธิบายเพิ่มเติมสำหรับข้อนี้"}</div>
               </div>
             )}
-          </div>
-          
-          {}
-          {/* Bottom Action Bar */}
-          <div className="p-4 sm:p-6 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
-            
-            {/* Status Message */}
-            <div className="flex-1">
-              {!isAnswered ? (
-                selectedOption === null ? (
-                  <span className="text-gray-500 text-sm flex items-center gap-2"><AlertCircle size={16}/> กรุณาเลือกคำตอบ</span>
+
+            <div className="action-bar">
+              <div className="status-text">
+                {!isAnswered ? (
+                  selectedOption === null ? (
+                    <><AlertCircle size={15} />กรุณาเลือกคำตอบก่อนดำเนินการต่อ</>
+                  ) : (
+                    <>เลือกคำตอบแล้ว กดปุ่มตรวจคำตอบเพื่อดำเนินการต่อ</>
+                  )
+                ) : selectedOption === currentItem.a ? (
+                  <span className="status-text correct"><CheckCircle2 size={15} />ตอบถูกต้อง</span>
                 ) : (
-                  <span className="text-indigo-600 text-sm font-medium">กดปุ่มตรวจคำตอบด้านขวา 👉</span>
-                )
-              ) : (
-                <span className={`text-sm font-bold flex items-center gap-2 ${selectedOption === currentItem.a ? 'text-green-600' : 'text-red-500'}`}>
-                  {selectedOption === currentItem.a ? <><CheckCircle2 size={18}/> ยอดเยี่ยม! ตอบถูกต้อง</> : <><XCircle size={18}/> น่าเสียดาย! ตอบผิด</>}
-                </span>
-              )}
-            </div>
+                  <span className="status-text incorrect"><XCircle size={15} />ตอบไม่ถูกต้อง</span>
+                )}
+              </div>
 
-            {/* Action Buttons */}
-            <div>
               {!isAnswered ? (
-                <button 
-                  onClick={checkAnswer}
-                  disabled={selectedOption === null}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all shadow-sm ${
-                    selectedOption !== null 
-                      ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md transform hover:-translate-y-0.5' 
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  }`}
-                >
-                  <PlayCircle size={20} /> ตรวจคำตอบ
+                <button onClick={checkAnswer} disabled={selectedOption === null} className="btn">
+                  <PlayCircle size={16} style={{ marginRight: 8, verticalAlign: -3 }} />ตรวจคำตอบ
                 </button>
               ) : (
-                <button 
-                  onClick={nextQuestion}
-                  className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-all shadow-md transform hover:-translate-y-0.5"
-                >
-                  {currentQIndex < totalQuestions - 1 ? 'ไปข้อถัดไป' : 'ดูสรุปผลคะแนน'} <ChevronRight size={20} />
+                <button onClick={nextQuestion} className="btn">
+                  {currentQIndex < totalQuestions - 1 ? 'ข้อถัดไป' : 'ดูสรุปผลการทดสอบ'}
+                  <ChevronRight size={16} style={{ marginLeft: 8, verticalAlign: -3 }} />
                 </button>
               )}
             </div>
           </div>
-
         </div>
-      </main>
+      </div>
     </div>
   );
 }
