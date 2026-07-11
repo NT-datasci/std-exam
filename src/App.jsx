@@ -277,6 +277,19 @@ const GlobalStyle = () => (
   `}</style>
 );
 
+const Letterhead = ({ eyebrow, title, sub }) => (
+  <div className="letterhead">
+    <div className="letterhead-rule" />
+    <div className="letterhead-body">
+      <div className="letterhead-seal"><Award size={28} strokeWidth={1.5} /></div>
+      <div className="letterhead-eyebrow">{eyebrow}</div>
+      <h1 className="letterhead-title">{title}</h1>
+      <p className="letterhead-sub">{sub}</p>
+    </div>
+    <div className="letterhead-rule thin" />
+  </div>
+);
+
 export default function App() {
   const [appState, setAppState] = useState('home');
   const [activeTab, setActiveTab] = useState('english');
@@ -342,19 +355,6 @@ export default function App() {
     setAppState('home');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  const Letterhead = ({ eyebrow, title, sub }) => (
-    <div className="letterhead">
-      <div className="letterhead-rule" />
-      <div className="letterhead-body">
-        <div className="letterhead-seal"><Award size={28} strokeWidth={1.5} /></div>
-        <div className="letterhead-eyebrow">{eyebrow}</div>
-        <h1 className="letterhead-title">{title}</h1>
-        <p className="letterhead-sub">{sub}</p>
-      </div>
-      <div className="letterhead-rule thin" />
-    </div>
-  );
 
   if (appState === 'home') {
     return (
