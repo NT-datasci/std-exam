@@ -188,14 +188,15 @@ const GlobalStyle = () => (
     .std-card-inner { padding: clamp(18px, 5vw, 28px) clamp(16px, 5vw, 30px); }
 
     .subject-list { display: flex; flex-direction: column; }
-    .subject-row { display: flex; align-items: center; gap: clamp(10px, 3vw, 18px); padding: clamp(14px, 4vw, 20px) clamp(14px, 4.5vw, 24px); border-bottom: 1px solid var(--line); background: #fff; cursor: pointer; text-align: left; width: 100%; transition: background 120ms ease; flex-wrap: wrap; }
+    .subject-row { display: flex; align-items: center; gap: clamp(10px, 3vw, 18px); padding: clamp(14px, 4vw, 20px) clamp(14px, 4.5vw, 24px); border-bottom: 1px solid var(--line); background: #fff; cursor: pointer; text-align: left; width: 100%; transition: background 120ms ease; flex-wrap: nowrap; }
     .subject-row:last-child { border-bottom: none; }
     .subject-row:hover { background: var(--navy-050); }
     .subject-index { font-family: 'Noto Serif Thai', serif; font-size: clamp(16px, 4vw, 20px); color: var(--gold-700); border: 1px solid var(--gold-600); width: clamp(32px, 8vw, 40px); height: clamp(32px, 8vw, 40px); min-width: clamp(32px, 8vw, 40px); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .subject-icon { color: var(--navy-800); flex-shrink: 0; }
-    .subject-name { font-family: 'Noto Serif Thai', serif; font-size: clamp(15px, 4vw, 18px); font-weight: 600; color: var(--navy-900); }
-    .subject-name-sub { font-size: clamp(11px, 3vw, 13px); color: var(--ink-400); }
-    .subject-meta { margin-left: auto; text-align: right; font-size: clamp(11px, 3vw, 13px); color: var(--ink-600); white-space: nowrap; }
+    .subject-name-block { flex: 1 1 auto; min-width: 0; }
+    .subject-name { font-family: 'Noto Serif Thai', serif; font-size: clamp(15px, 4vw, 18px); font-weight: 600; color: var(--navy-900); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .subject-name-sub { font-size: clamp(11px, 3vw, 13px); color: var(--ink-400); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .subject-meta { flex-shrink: 0; margin-left: auto; text-align: right; font-size: clamp(11px, 3vw, 13px); color: var(--ink-600); white-space: nowrap; }
     .subject-code { display: block; font-size: 11px; letter-spacing: 1px; color: var(--gold-700); margin-bottom: 2px; }
 
     .btn { font-family: 'Sarabun', sans-serif; font-size: clamp(12.5px, 3.4vw, 14px); font-weight: 600; letter-spacing: 0.5px; padding: clamp(10px, 2.8vw, 12px) clamp(16px, 5vw, 26px); border: 1px solid var(--navy-900); cursor: pointer; transition: all 120ms ease; background: var(--navy-900); color: #fff; white-space: nowrap; }
@@ -207,14 +208,20 @@ const GlobalStyle = () => (
     .btn-plain:hover { background: var(--navy-050); color: var(--navy-900); }
 
     .quiz-header { width: 100%; max-width: 760px; margin-bottom: 0; }
-    .quiz-header-bar { display: flex; justify-content: space-between; align-items: center; padding: clamp(10px, 3vw, 14px) 4px; flex-wrap: wrap; gap: 10px; }
-    .quiz-header-left { display: flex; align-items: center; gap: clamp(8px, 2.5vw, 12px); min-width: 0; }
+    .quiz-header-bar { display: flex; align-items: center; padding: clamp(10px, 3vw, 14px) 4px; flex-wrap: nowrap; gap: clamp(6px, 2vw, 10px); }
+    .header-back-btn { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: clamp(32px, 8vw, 36px); height: clamp(32px, 8vw, 36px); border: 1px solid var(--line); background: #fff; color: var(--ink-600); cursor: pointer; transition: all 120ms ease; padding: 0; }
+    .header-back-btn:hover { background: var(--navy-050); color: var(--navy-900); border-color: var(--navy-700); }
+    .quiz-header-left { flex: 1 1 auto; min-width: 0; overflow: hidden; }
     .quiz-header-title { font-family: 'Noto Serif Thai', serif; font-weight: 600; color: var(--navy-900); font-size: clamp(13px, 3.6vw, 15px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .quiz-header-label { font-size: clamp(10px, 2.6vw, 11px); letter-spacing: 1px; color: var(--gold-700); text-transform: uppercase; }
-    .score-plate { display: flex; gap: clamp(8px, 2.5vw, 14px); border: 1px solid var(--line); padding: clamp(5px, 1.6vw, 6px) clamp(10px, 3vw, 14px); font-size: clamp(12px, 3.2vw, 13px); background: #fff; }
-    .score-item { display: flex; align-items: center; gap: 5px; font-weight: 600; }
+    .quiz-header-label { font-size: clamp(10px, 2.6vw, 11px); letter-spacing: 1px; color: var(--gold-700); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .quiz-header-right { flex-shrink: 0; display: flex; align-items: stretch; gap: clamp(6px, 2vw, 10px); }
+    .score-plate { display: flex; align-items: center; gap: clamp(6px, 2vw, 12px); border: 1px solid var(--line); padding: 0 clamp(8px, 2.5vw, 12px); font-size: clamp(11px, 3vw, 13px); background: #fff; height: clamp(32px, 8vw, 36px); box-sizing: border-box; }
+    .score-item { display: flex; align-items: center; gap: 4px; font-weight: 600; white-space: nowrap; }
     .score-item.correct { color: var(--green-700); }
     .score-item.wrong { color: var(--maroon-700); }
+    .end-quiz-btn { flex-shrink: 0; display: flex; align-items: center; justify-content: center; height: clamp(32px, 8vw, 36px); box-sizing: border-box; padding: 0 clamp(10px, 3vw, 16px); font-family: 'Sarabun', sans-serif; font-size: clamp(11px, 3vw, 12px); font-weight: 600; letter-spacing: 0.3px; border: 1px solid var(--line); background: transparent; color: var(--ink-600); cursor: pointer; transition: all 120ms ease; white-space: nowrap; }
+    .end-quiz-btn:hover { background: var(--navy-050); color: var(--navy-900); border-color: var(--navy-700); }
+    .end-quiz-text-short { display: none; }
     .progress-track { height: 3px; background: var(--line); width: 100%; }
     .progress-fill { height: 100%; background: var(--gold-600); transition: width 250ms ease; }
 
@@ -271,7 +278,6 @@ const GlobalStyle = () => (
     .result-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
 
     @media (max-width: 560px) {
-      .quiz-header-bar { align-items: flex-start; }
       .action-bar { flex-direction: column; align-items: stretch; }
       .action-left { justify-content: space-between; }
       .action-bar > .btn:last-child { width: 100%; }
@@ -280,10 +286,15 @@ const GlobalStyle = () => (
     @media (max-width: 400px) {
       .letterhead-body { padding: 14px 10px 12px; }
       .std-card-inner { padding: 16px 14px; }
-      .subject-meta { width: 100%; text-align: left; margin-left: 0; margin-top: 6px; }
-      .score-plate { gap: 8px; }
       .result-actions { flex-direction: column; }
       .result-actions .btn { width: 100%; }
+    }
+
+    @media (max-width: 380px) {
+      .quiz-header-label { display: none; }
+      .end-quiz-text-full { display: none; }
+      .end-quiz-text-short { display: inline; }
+      .score-item span.score-num { display: inline; }
     }
   `}</style>
 );
@@ -310,7 +321,7 @@ export default function App() {
   const [userAnswers, setUserAnswers] = useState({});
   const [isAnswered, setIsAnswered] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
-  const actionBarRef = useRef(null);
+  const explainBoxRef = useRef(null);
 
   const currentData = quizData[activeTab];
   const totalQuestions = currentData.length;
@@ -345,9 +356,11 @@ export default function App() {
     }));
     setIsAnswered(true);
 
-    // เลื่อนหน้าจอไปยังบริเวณปุ่มดำเนินการต่อโดยอัตโนมัติ หลังแสดงคำอธิบายเฉลย
+    // เลื่อนหน้าจอไปยังบริเวณคำอธิบายเฉลย (ทริค) และปุ่มไปข้อถัดไปโดยอัตโนมัติ
+    // ใช้ block: 'end' เพื่อดันขอบล่างของกล่องปุ่มไปชิดขอบล่างจอ ทำให้เนื้อหาด้านบน
+    // (คำอธิบายเฉลย) เลื่อนขึ้นมาอยู่ในมุมมองมากที่สุดเท่าที่จะพอดีกับหน้าจอ
     setTimeout(() => {
-      actionBarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      explainBoxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }, 60);
   };
 
@@ -410,8 +423,8 @@ export default function App() {
                   <button key={key} className="subject-row" onClick={() => startQuiz(key)}>
                     <span className="subject-index">{toThai(idx + 1)}</span>
                     <Icon className="subject-icon" size={22} strokeWidth={1.5} />
-                    <span>
-                      <span className="subject-name">{meta.title}</span><br />
+                    <span className="subject-name-block">
+                      <span className="subject-name">{meta.title}</span>
                       <span className="subject-name-sub">{meta.sub}</span>
                     </span>
                     <span className="subject-meta">
@@ -498,22 +511,21 @@ export default function App() {
       <div className="std-page" style={{ paddingTop: 0 }}>
         <div className="quiz-header">
           <div className="quiz-header-bar">
+            <button onClick={resetToHome} className="header-back-btn" title="กลับหน้าหลัก">
+              <BookOpen size={16} />
+            </button>
             <div className="quiz-header-left">
-              <button onClick={resetToHome} className="btn-plain btn" style={{ padding: '8px 12px' }} title="กลับหน้าหลัก">
-                <BookOpen size={16} />
-              </button>
-              <div>
-                <div className="quiz-header-label">กำลังทำแบบทดสอบ</div>
-                <div className="quiz-header-title">{meta.title}</div>
-              </div>
+              <div className="quiz-header-label">กำลังทำแบบทดสอบ</div>
+              <div className="quiz-header-title">{meta.title}</div>
             </div>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <div className="quiz-header-right">
               <div className="score-plate">
-                <span className="score-item correct"><CheckCircle2 size={15} />{toThai(score)}</span>
-                <span className="score-item wrong"><XCircle size={15} />{toThai(wrongCount)}</span>
+                <span className="score-item correct"><CheckCircle2 size={14} />{toThai(score)}</span>
+                <span className="score-item wrong"><XCircle size={14} />{toThai(wrongCount)}</span>
               </div>
-              <button onClick={endQuiz} className="btn-plain btn" style={{ padding: '10px 16px', fontSize: 12 }}>
-                จบการทดสอบ
+              <button onClick={endQuiz} className="end-quiz-btn" title="จบการทดสอบ">
+                <span className="end-quiz-text-full">จบการทดสอบ</span>
+                <span className="end-quiz-text-short">จบ</span>
               </button>
             </div>
           </div>
@@ -576,13 +588,13 @@ export default function App() {
             </div>
 
             {isAnswered && (
-              <div className="explain-box">
+              <div className="explain-box" ref={explainBoxRef}>
                 <div className="explain-title"><Lightbulb size={17} />คำอธิบายเฉลย</div>
                 <div className="explain-text">{currentItem.exp || "ไม่มีคำอธิบายเพิ่มเติมสำหรับข้อนี้"}</div>
               </div>
             )}
 
-            <div className="action-bar" ref={actionBarRef}>
+            <div className="action-bar">
               <div className="action-left">
                 <button
                   onClick={prevQuestion}
