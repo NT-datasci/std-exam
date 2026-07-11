@@ -367,6 +367,9 @@ export default function App() {
     // เพื่อให้เห็นทั้งคำอธิบายและปุ่มกด
     setTimeout(() => {
       actionBarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      setTimeout(() => {
+        window.scrollBy({ top: 100, behavior: 'smooth' });
+      }, 100); // หน่วงเวลาเล็กน้อยเพื่อให้ scroll แรกทำงานใกล้เสร็จก่อน
     }, 150);
   };
 
