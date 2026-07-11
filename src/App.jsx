@@ -365,11 +365,11 @@ export default function App() {
     // แก้ปัญหา Auto Scroll: เพิ่มหน่วงเวลาเล็กน้อยเพื่อให้หน้าจอ Render เสร็จ
     // และเลื่อนจอไปให้กล่องปุ่มคำสั่ง (action-bar) อยู่ขอบล่างพอดี 
     // เพื่อให้เห็นทั้งคำอธิบายและปุ่มกด
-    setTimeout(() => {
-      actionBarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      setTimeout(() => {
-        window.scrollBy({ top: 100, behavior: 'smooth' });
-      }, 100); // หน่วงเวลาเล็กน้อยเพื่อให้ scroll แรกทำงานใกล้เสร็จก่อน
+   setTimeout(() => {
+      window.scrollTo({ 
+        top: document.documentElement.scrollHeight, // เลื่อนไปที่ความสูงรวมทั้งหมดของหน้าเว็บ
+        behavior: 'smooth' 
+      });
     }, 150);
   };
 
