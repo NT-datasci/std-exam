@@ -199,7 +199,7 @@ const GlobalStyle = () => (
     .subject-meta { flex-shrink: 0; margin-left: auto; text-align: right; font-size: clamp(11px, 3vw, 13px); color: var(--ink-600); white-space: nowrap; }
     .subject-code { display: block; font-size: 11px; letter-spacing: 1px; color: var(--gold-700); margin-bottom: 2px; }
 
-    .btn { font-family: 'Sarabun', sans-serif; font-size: clamp(12.5px, 3.4vw, 14px); font-weight: 600; letter-spacing: 0.5px; padding: clamp(10px, 2.8vw, 12px) clamp(16px, 5vw, 26px); border: 1px solid var(--navy-900); cursor: pointer; transition: all 120ms ease; background: var(--navy-900); color: #fff; white-space: nowrap; }
+    .btn { font-family: 'Sarabun', sans-serif; font-size: clamp(12.5px, 3.4vw, 14px); font-weight: 600; letter-spacing: 0.5px; padding: clamp(10px, 2.8vw, 12px) clamp(16px, 5vw, 26px); border: 1px solid var(--navy-900); cursor: pointer; transition: all 120ms ease; background: var(--navy-900); color: #fff; white-space: nowrap; display: inline-flex; align-items: center; }
     .btn:hover { background: var(--navy-700); }
     .btn:disabled { background: var(--ink-400); border-color: var(--ink-400); cursor: not-allowed; }
     .btn-outline { background: transparent; color: var(--navy-900); }
@@ -256,12 +256,14 @@ const GlobalStyle = () => (
     .explain-title { display: flex; align-items: center; gap: 8px; font-family: 'Noto Serif Thai', serif; font-weight: 700; color: var(--gold-700); font-size: clamp(13.5px, 3.6vw, 15px); margin-bottom: 8px; }
     .explain-text { font-size: clamp(13px, 3.5vw, 14px); line-height: 1.75; color: var(--ink-900); white-space: pre-wrap; }
 
-    .action-bar { display: flex; justify-content: space-between; align-items: center; padding: clamp(14px, 3.5vw, 18px) 4px 0; gap: 14px; flex-wrap: wrap; border-top: 1px solid var(--line); margin-top: clamp(18px, 4vw, 26px); }
-    .action-left { display: flex; align-items: center; gap: clamp(10px, 3vw, 16px); flex-wrap: wrap; }
-    .btn-prev { padding: clamp(9px, 2.4vw, 10px) clamp(14px, 4vw, 18px); font-size: clamp(12px, 3.2vw, 13px); }
-    .status-text { font-size: clamp(12px, 3.2vw, 13px); color: var(--ink-600); display: flex; align-items: center; gap: 6px; }
-    .status-text.correct { color: var(--green-700); font-weight: 600; }
-    .status-text.incorrect { color: var(--maroon-700); font-weight: 600; }
+    /* แก้ไขการจัดวางของ action-bar ให้กล่องข้อความและปุ่มมีขนาดสม่ำเสมอกัน */
+    .action-bar { display: flex; justify-content: space-between; align-items: center; padding: clamp(14px, 3.5vw, 18px) 0 0; gap: 14px; border-top: 1px solid var(--line); margin-top: clamp(18px, 4vw, 26px); }
+    .action-left { display: flex; align-items: stretch; gap: clamp(10px, 3vw, 14px); flex: 1; flex-wrap: wrap; }
+    
+    /* กล่องข้อความสถานะด้านล่าง */
+    .status-box { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--navy-050); border-radius: 6px; font-size: clamp(12px, 3.2vw, 13px); color: var(--ink-600); flex: 1; min-width: 0; }
+    .status-box.correct { background: var(--green-100); color: var(--green-700); font-weight: 600; }
+    .status-box.incorrect { background: var(--maroon-100); color: var(--maroon-700); font-weight: 600; }
 
     .result-shell { width: 100%; max-width: 640px; }
     .result-frame { border: 1px solid var(--gold-600); padding: clamp(4px, 1.5vw, 6px); }
@@ -277,10 +279,12 @@ const GlobalStyle = () => (
     .result-feedback { font-family: 'Noto Serif Thai', serif; font-size: clamp(14px, 4vw, 17px); color: var(--navy-900); margin-bottom: clamp(20px, 5vw, 30px); padding-top: 14px; border-top: 1px dashed var(--line); line-height: 1.5; }
     .result-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
 
+    /* ปรับแต่งสำหรับหน้าจอขนาดเล็ก ให้เรียงเป็นแนวตั้งสม่ำเสมอกัน */
     @media (max-width: 560px) {
-      .action-bar { flex-direction: column; align-items: stretch; }
-      .action-left { justify-content: space-between; }
-      .action-bar > .btn:last-child { width: 100%; }
+      .action-bar { flex-direction: column; align-items: stretch; gap: 12px; }
+      .action-left { flex-direction: column-reverse; justify-content: stretch; align-items: stretch; gap: 12px; width: 100%; }
+      .btn { width: 100%; display: flex; justify-content: center; }
+      .status-box { width: 100%; justify-content: center; text-align: center; }
     }
 
     @media (max-width: 400px) {
@@ -321,7 +325,9 @@ export default function App() {
   const [userAnswers, setUserAnswers] = useState({});
   const [isAnswered, setIsAnswered] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
-  const explainBoxRef = useRef(null);
+  
+  // อ้างอิงกล่องด้านล่างสุด (action-bar) เพื่อใช้ในการเลื่อนหน้าจอ
+  const actionBarRef = useRef(null);
 
   const currentData = quizData[activeTab];
   const totalQuestions = currentData.length;
@@ -356,12 +362,12 @@ export default function App() {
     }));
     setIsAnswered(true);
 
-    // เลื่อนหน้าจอไปยังบริเวณคำอธิบายเฉลย (ทริค) และปุ่มไปข้อถัดไปโดยอัตโนมัติ
-    // ใช้ block: 'end' เพื่อดันขอบล่างของกล่องปุ่มไปชิดขอบล่างจอ ทำให้เนื้อหาด้านบน
-    // (คำอธิบายเฉลย) เลื่อนขึ้นมาอยู่ในมุมมองมากที่สุดเท่าที่จะพอดีกับหน้าจอ
+    // แก้ปัญหา Auto Scroll: เพิ่มหน่วงเวลาเล็กน้อยเพื่อให้หน้าจอ Render เสร็จ
+    // และเลื่อนจอไปให้กล่องปุ่มคำสั่ง (action-bar) อยู่ขอบล่างพอดี 
+    // เพื่อให้เห็นทั้งคำอธิบายและปุ่มกด
     setTimeout(() => {
-      explainBoxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }, 60);
+      actionBarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 150);
   };
 
   // ไปยังข้อที่ระบุ พร้อมกู้คืนสถานะคำตอบเดิม หากเคยตอบข้อนั้นไปแล้ว
@@ -489,10 +495,10 @@ export default function App() {
 
                 <div className="result-actions">
                   <button onClick={() => startQuiz(activeTab)} className="btn btn-outline">
-                    <RotateCcw size={16} style={{ marginRight: 8, verticalAlign: -3 }} />ทำแบบทดสอบวิชานี้ใหม่
+                    <RotateCcw size={16} style={{ marginRight: 8 }} />ทำแบบทดสอบวิชานี้ใหม่
                   </button>
                   <button onClick={resetToHome} className="btn">
-                    <BookOpen size={16} style={{ marginRight: 8, verticalAlign: -3 }} />กลับสู่หน้าเลือกวิชา
+                    <BookOpen size={16} style={{ marginRight: 8 }} />กลับสู่หน้าเลือกวิชา
                   </button>
                 </div>
               </div>
@@ -588,45 +594,47 @@ export default function App() {
             </div>
 
             {isAnswered && (
-              <div className="explain-box" ref={explainBoxRef}>
+              <div className="explain-box">
                 <div className="explain-title"><Lightbulb size={17} />คำอธิบายเฉลย</div>
                 <div className="explain-text">{currentItem.exp || "ไม่มีคำอธิบายเพิ่มเติมสำหรับข้อนี้"}</div>
               </div>
             )}
 
-            <div className="action-bar">
+            {/* เพิ่ม ref ที่ส่วนนี้เพื่อเป็นเป้าหมายในการ Scroll หน้าจออัตโนมัติ */}
+            <div className="action-bar" ref={actionBarRef}>
               <div className="action-left">
                 <button
                   onClick={prevQuestion}
                   disabled={currentQIndex === 0}
                   className="btn btn-outline btn-prev"
                 >
-                  <ChevronLeft size={16} style={{ marginRight: 6, verticalAlign: -3 }} />ย้อนกลับ
+                  <ChevronLeft size={16} style={{ marginRight: 6 }} />ย้อนกลับ
                 </button>
 
-                <div className="status-text">
+                {/* เปลี่ยนข้อความให้แสดงผลในรูปแบบกล่องที่มีสีพื้นหลังชัดเจน */}
+                <div className={`status-box ${isAnswered ? (selectedOption === currentItem.a ? 'correct' : 'incorrect') : ''}`}>
                   {!isAnswered ? (
                     selectedOption === null ? (
-                      <><AlertCircle size={15} />กรุณาเลือกคำตอบก่อนดำเนินการต่อ</>
+                      <><AlertCircle size={15} style={{ flexShrink: 0 }} />กรุณาเลือกคำตอบก่อน</>
                     ) : (
                       <>เลือกคำตอบแล้ว กดปุ่มตรวจคำตอบเพื่อดำเนินการต่อ</>
                     )
                   ) : selectedOption === currentItem.a ? (
-                    <span className="status-text correct"><CheckCircle2 size={15} />ตอบถูกต้อง</span>
+                    <><CheckCircle2 size={15} style={{ flexShrink: 0 }} />ตอบถูกต้อง</>
                   ) : (
-                    <span className="status-text incorrect"><XCircle size={15} />ตอบไม่ถูกต้อง</span>
+                    <><XCircle size={15} style={{ flexShrink: 0 }} />ตอบไม่ถูกต้อง</>
                   )}
                 </div>
               </div>
 
               {!isAnswered ? (
                 <button onClick={checkAnswer} disabled={selectedOption === null} className="btn">
-                  <PlayCircle size={16} style={{ marginRight: 8, verticalAlign: -3 }} />ตรวจคำตอบ
+                  <PlayCircle size={16} style={{ marginRight: 8 }} />ตรวจคำตอบ
                 </button>
               ) : (
                 <button onClick={nextQuestion} className="btn">
                   {currentQIndex < totalQuestions - 1 ? 'ข้อถัดไป' : 'ดูสรุปผลการทดสอบ'}
-                  <ChevronRight size={16} style={{ marginLeft: 8, verticalAlign: -3 }} />
+                  <ChevronRight size={16} style={{ marginLeft: 8 }} />
                 </button>
               )}
             </div>
